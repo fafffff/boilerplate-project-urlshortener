@@ -1,24 +1,22 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const app = express();
+const express=require('express');
+const mongoose=require('mongoose');
+const cors=require('cors');
+const helmet=require('helmet');
+const path=require('path');
+const shortid=require('shortid')
+const urlRoutes=require('./routes/urlRoutes');
 
-// Basic Configuration
-const port = process.env.PORT || 3000;
-
+const app=express();
 app.use(cors());
+app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
+app.use(express.static(path.join(__dirname,'public')))
 
-app.use('/public', express.static(`${process.cwd()}/public`));
+mongoose.connect(process.env.MONGO_URI).then(()=>console.log('Connected to MongoDB'))
+.catch((err)=>console.error('MongoDB connection error:',err.stack))
+app.use('/api/urls',urlRoutes);
 
-app.get('/', function(req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
-});
-
-// Your first API endpoint
-app.get('/api/hello', function(req, res) {
-  res.json({ greeting: 'hello API' });
-});
-
-app.listen(port, function() {
-  console.log(`Listening on port ${port}`);
-});
+const PORT=process.env.PORT||3000;
+app.listen(PORT,()=>(`Server is running on port ${PORT}`))
